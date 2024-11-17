@@ -5,7 +5,7 @@
 
 <div class="sequencer">
   {#each notes as note, i}
-  <div class="note">{note}</div>
+  <div class="note {i == 0 ? 'active': ''}">{note}</div>
   {/each}
 </div>
 
@@ -29,4 +29,9 @@
     font-size: 2rem;
   }
 
+  .note.active {
+    background: #600889;
+    border: 1px solid #600889;
+    color: #fff;
+  }
 </style>
