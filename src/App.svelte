@@ -1,7 +1,14 @@
 <script>
   let notes = Array(64).fill('');
+  let bpm = 100;
 </script>
 
+<div class="bpm-controls">
+  <label for="bpm">{bpm} BPM</label>
+  <input type="range" id="bpm" min="50" max="240" bind:value={bpm} />
+  <button>Play</button>
+  <button>Stop</button>
+</div>
 
 <div class="sequencer">
   {#each notes as note, i}
@@ -32,6 +39,14 @@
   .note.active {
     background: #600889;
     border: 1px solid #600889;
+    color: #fff;
+  }
+
+  .bpm-controls {
+    margin-bottom: 20px;
+  }
+
+  .bpm-controls label {
     color: #fff;
   }
 </style>
