@@ -12,7 +12,7 @@
 
 <div class="sequencer">
   {#each notes as note, i}
-  <div class="note {i == 0 ? 'active': ''}">{note}</div>
+  <div class="note {i == 0 ? 'active': ''} {i % 4 ? '' : 'first-beat-of-the-bar'}">{note}</div>
   {/each}
 </div>
 
@@ -42,6 +42,10 @@
     color: #fff;
   }
 
+  .first-beat-of-the-bar {
+    background: #98c9fa;
+    border: 1px solid #98c9fa;
+  }
   .bpm-controls {
     margin-bottom: 20px;
   }
