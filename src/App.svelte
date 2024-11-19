@@ -21,6 +21,8 @@
     Array.from({ length: 16 }, (_, i) => ({ note: scaleOfNotes[0], active: false })),
   ]
 
+  let beatIndicators = Array.from({ length: 16 }, (_, i) => i);
+
   Tone.Transport.scheduleRepeat(time => {
       rows.forEach((row, index) => {
         let synth = synths[index];
@@ -67,6 +69,9 @@
 </div>
 
 <div class="sequencer">
+  {#each beatIndicators as beatIndicator, bi}
+    <div class="beat-indicator {bi === beat -1 ? 'live' : ''}"></div>
+  {/each}
   {#each rows as row, i}
     {#each row as note, j}
       <!-- svelte-ignore a11y_consider_explicit_label -->
@@ -113,5 +118,21 @@
 
   .bpm-controls label {
     color: #fff;
+  }
+
+  .beat-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #555;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    font-size: 1.5rem;
+    margin: 0 auto;
+  }
+  .live {
+    background: #05f18f;
   }
 </style>
