@@ -119,10 +119,12 @@
 
   .sequencer__block {
     display: block;
+    margin: 5px;
   }
 
   .sequencer__measure {
     display: flex;
+    gap: 5px;
     border-color: #555;
   }
 
