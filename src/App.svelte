@@ -9,35 +9,31 @@
     new Tone.Synth().toDestination(),
     new Tone.Synth().toDestination(),
     new Tone.Synth().toDestination(),
-    new Tone.Synth().toDestination()
+    new Tone.Synth().toDestination(),
   ];
 
   const scaleOfNotes = ["C4", "D4", "Eb4", "F4"];
 
-  let rows = [
+  let instruments = [
     Array.from({ length: 16 }, (_, i) => ({ note: scaleOfNotes[3], active: false })),
     Array.from({ length: 16 }, (_, i) => ({ note: scaleOfNotes[2], active: false })),
     Array.from({ length: 16 }, (_, i) => ({ note: scaleOfNotes[1], active: false })),
     Array.from({ length: 16 }, (_, i) => ({ note: scaleOfNotes[0], active: false })),
-  ]
+  ];
 
-  let beatIndicators = Array.from({ length: 16 }, (_, i) => i);
+  Tone.Transport.scheduleRepeat((time) => {
+    instruments.forEach((instrument, index) => {
+      let synth = synths[index];
+      let note = instrument[beat];
+      if (note.active) synth.triggerAttackRelease(note.note, "16n", time);
+    });
+    beat = (beat + 1) % 16;
+  }, "16n");
 
-  Tone.Transport.scheduleRepeat(time => {
-      rows.forEach((row, index) => {
-        let synth = synths[index];
-        let note = row[beat];
-        if (note.active) synth.triggerAttackRelease(note.note, "16n", time);
-      });
-      beat = (beat + 1) % 16;
-    }, "16n");
-
-  // @ts-ignore
-  const handleNoteClick = (rowIndex, noteIndex) => {
-    rows[rowIndex][noteIndex].active = !rows[rowIndex][noteIndex].active;
+  const handleNoteClick = (instIndex, noteIndex) => {
+    instruments[instIndex][noteIndex].active = !instruments[instIndex][noteIndex].active;
   };
 
-  // @ts-ignore
   const handlePlayClick = () => {
     if (!isPlaying) Tone.start();
     Tone.Transport.bpm.value = bpm;
@@ -45,15 +41,12 @@
     isPlaying = true;
   };
 
-  // @ts-ignore
   const handleStopClick = () => {
     Tone.Transport.stop();
     isPlaying = false;
   };
 
-  // @ts-ignore
   $: if (isPlaying) {
-    // svelte-ignore reactive_declaration_non_reactive_property
     Tone.Transport.bpm.value = bpm;
   }
 </script>
@@ -62,44 +55,70 @@
   <label for="bpm">{bpm} BPM</label>
   <input type="range" id="bpm" min="50" max="240" bind:value={bpm} />
   {#if isPlaying}
-      <button on:click={handleStopClick}>Stop</button>
-    {:else}
-      <button on:click={handlePlayClick}>Play</button>
-    {/if}
+    <button on:click={handleStopClick}>Stop</button>
+  {:else}
+    <button on:click={handlePlayClick}>Play</button>
+  {/if}
 </div>
 
 <div class="sequencer">
-  {#each beatIndicators as beatIndicator, bi}
-    <div class="beat-indicator {bi === beat -1 ? 'live' : ''}"></div>
-  {/each}
-  {#each rows as row, i}
-    {#each row as note, j}
-      <!-- svelte-ignore a11y_consider_explicit_label -->
-      <button 
-      on:click={() => handleNoteClick(i, j)}
-      class="note {note.active ? 'active': ''} {j % 4 === 0 ? 'first-beat-of-the-bar' : ''}"></button>
-    {/each}
+  {#each instruments as instrument, instIndex}
+    <div class="sequencer__measure">
+      {#each instrument as note, noteIndex}
+        <div class="sequencer__beat">
+          <!-- {#if instIndex === 0} -->
+            <div class="beat-indicator {noteIndex === beat && isPlaying ? 'live' : ''}"></div>
+          <!-- {/if} -->
+          <!-- svelte-ignore a11y_consider_explicit_label -->
+          <button
+            class="note {note.active ? 'active' : ''} {noteIndex % 4 === 0 ? 'first-beat-of-the-bar' : ''}"
+            on:click={() => handleNoteClick(instIndex, noteIndex)}
+          ></button>
+        </div>
+      {/each}
+    </div>
   {/each}
 </div>
 
 <style>
   .sequencer {
     display: grid;
-    grid-template-columns: repeat(16, 1fr);
-    grid-gap: 5px;
-    width: 100%;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    background-color: #98c9fa;
+    border-radius: 7px;
+    padding: 4px;
+  }
+
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .sequencer {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 767px) {
+    .sequencer {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .sequencer__measure {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+  }
+
+  .sequencer__beat {
+    display: block;
   }
 
   .note {
     background: #ccc;
-    width: 50px;
+    width: 70px;
     height: 50px;
     border: 1px solid #ccc;
     border-radius: 7px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 2rem;
+    margin-top: 7px;
   }
 
   .note.active {
@@ -109,11 +128,13 @@
   }
 
   .first-beat-of-the-bar {
-    background: #98c9fa;
+    background: #434445;
     border: 1px solid #98c9fa;
   }
+
   .bpm-controls {
     margin-bottom: 20px;
+    text-align: center;
   }
 
   .bpm-controls label {
@@ -132,6 +153,7 @@
     font-size: 1.5rem;
     margin: 0 auto;
   }
+
   .live {
     background: #05f18f;
   }
