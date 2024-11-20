@@ -3,6 +3,8 @@
 
   let bpm = 100;
   let beat = 0;
+  const beatsPerMeasure = 4;
+  const numberOfMeasures = 4;
   let isPlaying = false;
 
   const synths = [
@@ -15,10 +17,10 @@
   const scaleOfNotes = ["C4", "D4", "Eb4", "F4"];
 
   let instruments = [
-    Array.from({ length: 16 }, (_, i) => ({ note: scaleOfNotes[3], active: false })),
-    Array.from({ length: 16 }, (_, i) => ({ note: scaleOfNotes[2], active: false })),
-    Array.from({ length: 16 }, (_, i) => ({ note: scaleOfNotes[1], active: false })),
-    Array.from({ length: 16 }, (_, i) => ({ note: scaleOfNotes[0], active: false })),
+    Array.from({ length: beatsPerMeasure*numberOfMeasures }, (_, i) => ({ note: scaleOfNotes[3], active: false })),
+    Array.from({ length: beatsPerMeasure*numberOfMeasures }, (_, i) => ({ note: scaleOfNotes[2], active: false })),
+    Array.from({ length: beatsPerMeasure*numberOfMeasures }, (_, i) => ({ note: scaleOfNotes[1], active: false })),
+    Array.from({ length: beatsPerMeasure*numberOfMeasures }, (_, i) => ({ note: scaleOfNotes[0], active: false })),
   ];
 
   Tone.Transport.scheduleRepeat((time) => {
@@ -30,6 +32,7 @@
     beat = (beat + 1) % 16;
   }, "16n");
 
+  // @ts-ignore
   const handleNoteClick = (instIndex, noteIndex) => {
     instruments[instIndex][noteIndex].active = !instruments[instIndex][noteIndex].active;
   };
@@ -46,7 +49,8 @@
     isPlaying = false;
   };
 
-  $: if (isPlaying) {
+ // @ts-ignore
+   $: if (isPlaying) {
     Tone.Transport.bpm.value = bpm;
   }
 </script>
@@ -62,26 +66,32 @@
 </div>
 
 <div class="sequencer">
-  {#each instruments as instrument, instIndex}
-    <div class="sequencer__measure">
-      {#each instrument as note, noteIndex}
-        <div class="sequencer__beat">
-          <!-- {#if instIndex === 0} -->
-            <div class="beat-indicator {noteIndex === beat && isPlaying ? 'live' : ''}"></div>
-          <!-- {/if} -->
-          <!-- svelte-ignore a11y_consider_explicit_label -->
-          <button
-            class="note {note.active ? 'active' : ''} {noteIndex % 4 === 0 ? 'first-beat-of-the-bar' : ''}"
-            on:click={() => handleNoteClick(instIndex, noteIndex)}
-          ></button>
-        </div>
+  <div class="sequencer sequencer__wrapper">
+    {#each Array(numberOfMeasures) as _, measureIndex}
+    <div class="sequencer sequencer__block">
+      {#each Array(instruments.length) as _, instrumentIndex}
+      <div class="sequencer sequencer__measure">
+          {#each Array(beatsPerMeasure) as _, beatIndex}
+          <div class="sequencer sequencer__beat">
+            <div class="sequencer sequencer__measure beat-indicator"></div>
+            <!-- svelte-ignore a11y_consider_explicit_label -->
+            <button class="note"></button>
+          </div>
+          {/each}
+      </div>
       {/each}
     </div>
-  {/each}
+    {/each}
+  </div>
 </div>
 
 <style>
-  .sequencer {
+
+  * {
+    box-sizing: border-box;
+  }
+
+  .sequencer__wrapper {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 8px;
@@ -91,25 +101,31 @@
   }
 
   @media (min-width: 768px) and (max-width: 1023px) {
-    .sequencer {
+    .sequencer__wrapper {
       grid-template-columns: repeat(2, 1fr);
     }
   }
 
   @media (max-width: 767px) {
-    .sequencer {
+    .sequencer__wrapper {
       grid-template-columns: 1fr;
     }
   }
 
+  .sequencer__block {
+    display: block;
+  }
+
   .sequencer__measure {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
+    display: flex;
+    background-color: cyan;
+    border-style: dashed;
+    border-color: #555;
   }
 
   .sequencer__beat {
     display: block;
+    border-style: dashed;
   }
 
   .note {
@@ -158,3 +174,4 @@
     background: #05f18f;
   }
 </style>
+
