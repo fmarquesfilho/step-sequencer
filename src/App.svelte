@@ -123,14 +123,11 @@
 
   .sequencer__measure {
     display: flex;
-    background-color: cyan;
-    border-style: dashed;
     border-color: #555;
   }
 
   .sequencer__beat {
     display: block;
-    border-style: dashed;
   }
 
   .note {
